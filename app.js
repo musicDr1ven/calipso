@@ -11,6 +11,8 @@
 var req = require('express/lib/request'),
   utils = require('express/lib/utils');
 
+
+
 var flashFormatters = req.flashFormatters = {
   s:function (val) {
     return String(val);

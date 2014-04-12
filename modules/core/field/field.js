@@ -93,7 +93,7 @@ function addFieldConfiguration(event, formData, next) {
           //console.log(fieldValues);
           var settings = fieldSettings(fieldValues);
           // Add a new section
-          settings.push(newSection);
+         // settings.push(newSection);
             // Initially there was only one element in the array, reset it.
             while (formFields.length > 1) {
               formFields.shift();
@@ -130,18 +130,18 @@ function fieldSettings(fields, settings) {
       if (key === 'fields') {
         // Add a new field
         fields[key].push(newField);
-        for (var i = 0; i < fields[key].length; i++) {
-          settingsFormCb = fieldHelper.settingsForm[fields[key][i].type];
-          if (typeof settingsFormCb !== 'function') {
-            settingsFormCb = defaultFieldSettingsFormJson;
-          }
-          settings = settings.concat(settingsFormCb(fields[key][i]));
-        }
-      }
-      else if (key === 'sections') {
-        for (var i = 0; i < fields[key].length; i++) {
-          settings = settings.concat(sectionSettingsFormJson(fields[key][i]));
-        }
+     //   for (var i = 0; i < fields[key].length; i++) {
+      //    settingsFormCb = fieldHelper.settingsForm[fields[key][i].type];
+      //    if (typeof settingsFormCb !== 'function') {
+       //     settingsFormCb = defaultFieldSettingsFormJson;
+       //   }
+       //   settings = settings.concat(settingsFormCb(fields[key][i]));
+       // }
+     // }
+     // else if (key === 'sections') {
+       // for (var i = 0; i < fields[key].length; i++) {
+        //  settings = settings.concat(sectionSettingsFormJson(fields[key][i]));
+       // }
       }
     }
   }

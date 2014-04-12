@@ -5,7 +5,8 @@ var rootpath = process.cwd() + '/',
   path = require('path'),
   calipso = require(path.join(rootpath, 'lib/calipso')),
   crypto = require("crypto"),
-
+  grunt = require("grunt"),
+  
   exports = module.exports = {
     init:init,
     route:route,
@@ -13,6 +14,7 @@ var rootpath = process.cwd() + '/',
   };
 
 var readonlyModules = ["admin", "user", "content", "contentTypes", "permissions", "checkbox", "field", "hidden", "text"]; // Modules that cant be disabled
+
 
 /*
  * Router
@@ -79,6 +81,13 @@ function init(module, app, next) {
         permit:corePermit
       }, this.parallel());
 
+      module.router.addRoute('GET /admin/rebuildSass', rebuildSass, {
+    	  template:'admin',
+    	  block:'admin.show',
+          admin:true,
+          permit:corePermit
+        }, this.parallel());
+      
       // Core configuration
       module.router.addRoute('GET /admin/core/config', coreConfig, {
         block:'admin.show',
@@ -573,6 +582,15 @@ function showAdmin(req, res, template, block, next) {
 
 }
 
+function rebuildSass(req, res, template, block, next) {
+
+	grunt.util.spawn({ grunt: true, args: ['default'] },function() {
+		  grunt.log.ok('Done running Grunt compass.');
+		  res.redirect('/admin/core/config');
+		});
+	
+	
+}
 function downloadConfig(req, res, template, block, next) {
   if (process.env.MONGO_URI) {
     var Conf = calipso.db.model('Conf');
@@ -898,6 +916,11 @@ function coreConfig(req, res, template, block, next) {
             description:'Administration theme [NOT YET IMPLEMENTED]'
           },
           {
+        	  label:'Background Color',
+              name:'theme:background-color',
+              type:'text'
+          },
+          {
             name:'theme:default',
             type:'hidden'
           },
@@ -1013,6 +1036,12 @@ function coreConfig(req, res, template, block, next) {
         href:'/admin',
         value:'Cancel'
       },
+      {
+          name:'rebuildSass',
+          type:'button',
+          href:'/admin/rebuildSass',
+          value:'Rebuild Sass'
+        },
       {
         name:'download',
         type:'button',

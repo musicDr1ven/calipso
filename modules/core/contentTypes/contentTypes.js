@@ -29,8 +29,110 @@ exports = module.exports = {
   routes:routes,
   init:init,
   route:route,
-  install:install
+  install:install,
+  helpers: helpers
 };
+
+function helpers() {
+	this.name = "contentType.helpers";
+	this.contentType = [];
+				
+}
+
+var h = new helpers();
+
+helpers.loadContentTypes = function() {
+	
+	
+	 var ContentType = calipso.db.model('ContentType');
+
+
+	 var opts = "[";
+
+	  var query = new Query();
+
+	  // Initialise the block based on our content
+	  ContentType.count(query, function (err, count) {
+
+	    var total = count;
+
+	    ContentType.find(query)
+	      .sort('contentType')
+	      .find(function (err, contents) {
+var gotone = false;
+	    contents.forEach(function (v){
+	    	var subval = "";
+	    	if (gotone)
+	    		{
+	    		opts += ",";
+	    		}
+	    	opts += "{value:'" + v._id + "',label:'" + v.contentType + "'}";
+	    console.log(opts);
+	    	opts = opts + subval;
+	    	   gotone = true;
+	    });
+	    opts = opts + "]";
+	    console.log (opts);
+		//this.contentTypes = JSON.parse(opts);
+	      });
+	    
+	  });
+	
+}
+
+helpers.prototype.contentTypes = [];
+helpers.prototype.loadContentTypes = function() {
+	 var ContentType = calipso.db.model('ContentType');
+
+
+	 var ContentType = calipso.db.model('ContentType');
+
+
+	 var opts = "[";
+
+	  var query = new Query();
+
+	  // Initialise the block based on our content
+	  ContentType.count(query, function (err, count) {
+
+	    var total = count;
+
+	    ContentType.find(query)
+	      .sort('contentType')
+	      .find(function (err, contents) {
+var gotone = false;
+	    contents.forEach(function (v){
+	    	var subval = "";
+	    	if (gotone)
+	    		{
+	    		opts += ',';
+	    		}
+	    	opts += '{"value":"' + v._id + '","label":"' + v.contentType + '"}';
+	    //console.log(opts);
+	    	opts = opts + subval;
+	    	   gotone = true;
+	    });
+	    opts = opts + "]";
+	   console.log (opts);
+		h.contentTypes = JSON.parse(opts);
+	      });
+	    
+	  });
+
+}
+var ContentType = new calipso.lib.mongoose.Schema({
+    contentType:{type:String, required:true, unique:true, "default":'default', index:true},
+    description:{type:String, required:true, "default":'Default Content Type'},
+    layout:{type:String, required:true, "default":'default'},
+    ispublic:{type:Boolean, required:true, "default":true},
+    created:{ type:Date, "default":Date.now },
+    updated:{ type:Date, "default":Date.now },
+    inheritsFrom:{ type:String, required:false,"default":'root'},
+    fields:{type:String, "default":""},
+    templateLanguage:{type:String, required:true, "default":'html'},
+    viewTemplate:{type:String, "default":''},
+    listTemplate:{type:String, "default":''}
+  });
 
 /**
  * Router
@@ -75,21 +177,14 @@ function init(module, app, next) {
   calipso.permission.Helper.addPermission("admin:content:type", "Content Types", true);
 
   // Schemea
-  var ContentType = new calipso.lib.mongoose.Schema({
-    contentType:{type:String, required:true, unique:true, "default":'default', index:true},
-    description:{type:String, required:true, "default":'Default Content Type'},
-    layout:{type:String, required:true, "default":'default'},
-    ispublic:{type:Boolean, required:true, "default":true},
-    created:{ type:Date, "default":Date.now },
-    updated:{ type:Date, "default":Date.now },
-    fields:{type:String, "default":""},
-    templateLanguage:{type:String, required:true, "default":'html'},
-    viewTemplate:{type:String, "default":''},
-    listTemplate:{type:String, "default":''}
-  });
 
-  calipso.db.model('ContentType', ContentType);
+  
 
+	  calipso.db.model('ContentType', ContentType);
+
+	
+ 
+ 
   // Cache the content types in the calipso.data object
   if (app.config.get('installed')) {
     storeContentTypes(null, null, function () {
@@ -100,6 +195,12 @@ function init(module, app, next) {
     module.initialised = true;
     next();
   }
+  
+  
+  
+  h.loadContentTypes();
+  
+  
 }
 
 /**
@@ -146,6 +247,59 @@ function install(next) {
 
 }
 
+
+function getCTArray() {
+
+    var theme = this;
+
+    
+
+    
+    
+  
+	
+  
+    
+
+    	  // Initialise the block based on our content
+    	
+    var ContentType = calipso.db.model('ContentType');
+    		
+    	    var options = "["
+     	  var query = new Query();
+
+     	  // Initialise the block based on our content
+     	  ContentType.count(query, function (err, count) {
+
+     	    var total = count;
+     	    var options = [];
+     	    ContentType.find(query)
+     	      .sort('contentType')
+     	      .find(function (err, contents) {
+     	    	  var length = contents.length;   
+     	    	  for (var i = 0; i < length; i++) {
+     	    		  if (i>0)
+     	    			  subval += ",";
+     	    		  
+     	    	    var subval = "{";
+     	    	    subval += "(value:'" + contents[i].Id + "',label:'" + contents[i].contentType + "'";
+     	    	   subval += "}";
+     	    	    options += subval;
+     	    	  }
+     	       
+
+     	      });
+
+     	  });
+
+    	  
+    
+    options +="]"
+    
+   
+    return options;
+
+  }
 /**
  * Content type create / edit form
  */
@@ -158,7 +312,12 @@ var contentTypeForm = {
       {label:'Layout', name:'contentType[layout]', type:'select', options:function () {
         return calipso.theme.getLayoutsArray()
       }, description:'Select the layout from the active theme used to render this type, choose default if unsure!'},
-      {label:'Is Public', name:'contentType[ispublic]', type:'select', options:["Yes", "No"], description:"Public content types appear in lists of content; private types are usually used as components in other pages."}
+      {label:'Is Public', name:'contentType[ispublic]', type:'select', options:["Yes", "No"], description:"Public content types appear in lists of content; private types are usually used as components in other pages."},
+      {label:'Inherits From',  name:'contentType[inheritsFrom]',  type:'select',  options:function () {
+        return h.contentTypes
+      },
+          description:'Inherit the property of this Content Type'
+        }
     ]},
     {id:'type-custom-fields', label:'Custom Fields', fields:[
       {label:'Custom Fields Definition', name:'contentType[fields]', type:'json', description:"Define any custom fields using the Calipso form language, see the help below.", placeholder:"Custom fields here >>"}
